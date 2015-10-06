@@ -10,22 +10,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.net.ssl.HttpsURLConnection;
-
 public class MainActivity extends AppCompatActivity {
+
+    private TextView xmlTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        xmlTextView = (TextView) findViewById(R.id.xmlTextView);
         DownloadData downloadData = new DownloadData();
-        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topMovies/xml");
+        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -73,17 +76,23 @@ public class MainActivity extends AppCompatActivity {
             }
             return mFilesContents;
         }
+
+        /**
+         * Method onPostExecute post out of of URL to screen
+         * @param result
+         */
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             Log.d("DownloadData", "Result was: " + result);
+            xmlTextView.setText(mFilesContents);//shows xml content to screen
         }
 
         private String downloadXMLFiles(String urlPath) {
             StringBuilder tempBuffer = new StringBuilder();
             try {
                 URL url = new URL(urlPath);//if URL is vaild will open Top 10 RSS feed
-                HttpsURLConnection connection = (HttpsURLConnection)url.openConnection();//opens connection
+                HttpURLConnection connection = (HttpURLConnection)url.openConnection();//opens connection
                 int response = connection.getResponseCode();
                 Log.d("DownloadData", "The response code was " + response);
                 InputStream is = connection.getInputStream();
@@ -101,11 +110,12 @@ public class MainActivity extends AppCompatActivity {
                 return tempBuffer.toString();//convert buffer to string
             } catch(IOException e){
                 Log.d("DownloadData", "IO Exception reading data: " + e.getMessage());
+                e.printStackTrace();
             } catch(SecurityException e) {
                 Log.d("DownloadData", "Security exception. Need permissions? " + e.getMessage());
             }//if there is a error log and try to debug error
 
-            return null;
+            return null;//return If there is error downloading
         }
 
 
